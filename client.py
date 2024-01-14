@@ -1,5 +1,8 @@
 import socket
 import threading
+from colorama import init, Fore
+
+init(autoreset=True)
 
 # Choosing Nickname
 nickname = input("Choose your nickname: ")
@@ -12,16 +15,15 @@ client.connect(('127.0.0.1', 55555))
 def receive():
     while True:
         try:
-            # Receive Message From Server
-            # If 'NICK' Send Nickname
+            # Send Nickname to Server
             message = client.recv(1024).decode('ascii')
             if message == 'NICK':
                 client.send(nickname.encode('ascii'))
             else:
-                print(message)
+                print(Fore.GREEN + message)
         except:
             # Close Connection When Error
-            print("An error occured!")
+            print(Fore.RED + "An error occurred!")
             client.close()
             break
             
@@ -37,3 +39,4 @@ receive_thread.start()
 
 write_thread = threading.Thread(target=write)
 write_thread.start()
+
