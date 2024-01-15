@@ -1,2 +1,2 @@
-# hidden-chat-room
-A secure encrypted chat application implemented in Python. (under development)
+# tcp-chat-room
+A terminal chat application implemented in Python. (under development)
