@@ -1,6 +1,7 @@
 import socket
 import threading
 from colorama import init, Fore, Style
+import random
 
 init(autoreset=True)
 
@@ -16,14 +17,12 @@ server.listen()
 # Lists For Clients and Their Nicknames
 clients = []
 nicknames = []
-colors = [Fore.RED + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.BLUE + Style.BRIGHT,
-          Fore.MAGENTA + Style.BRIGHT, Fore.CYAN + Style.BRIGHT, Fore.WHITE + Style.BRIGHT,
-          Fore.GREEN + Style.BRIGHT, Fore.LIGHTRED_EX + Style.BRIGHT, Fore.LIGHTYELLOW_EX + Style.BRIGHT, 
-          Fore.LIGHTBLUE_EX + Style.BRIGHT, Fore.LIGHTMAGENTA_EX + Style.BRIGHT, Fore.LIGHTCYAN_EX + Style.BRIGHT, 
-          Fore.LIGHTWHITE_EX + Style.BRIGHT]
-
-# Add more colors if needed
-client_colors = {}  # Dictionary to store client colors
+available_colors = [Fore.RED + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.BLUE + Style.BRIGHT,
+                    Fore.MAGENTA + Style.BRIGHT, Fore.CYAN + Style.BRIGHT, Fore.WHITE + Style.BRIGHT,
+                    Fore.GREEN + Style.BRIGHT, Fore.LIGHTRED_EX + Style.BRIGHT, Fore.LIGHTYELLOW_EX + Style.BRIGHT,
+                    Fore.LIGHTBLUE_EX + Style.BRIGHT, Fore.LIGHTMAGENTA_EX + Style.BRIGHT, Fore.LIGHTCYAN_EX + Style.BRIGHT,
+                    Fore.LIGHTWHITE_EX + Style.BRIGHT]
+client_colors = {}
 
 print(Style.BRIGHT + Fore.GREEN + "TCP-Chat server listening...")
 
@@ -32,7 +31,7 @@ def broadcast(message, client_sender):
     sender_index = clients.index(client_sender)
     sender_color = client_colors[client_sender]
     
-    for client, color in zip(clients, colors):
+    for client, color in zip(clients, available_colors):
         if client != client_sender:
             client.send((sender_color + message).encode('ascii'))
 
@@ -75,7 +74,7 @@ def receive():
         nicknames.append(nickname)
 
         # Assign Color to Client
-        client_color = colors[len(nicknames) - 1]  # Assign color based on order of connection
+        client_color = random.choice(available_colors)
         client_colors[client] = client_color
 
         clients.append(client)
