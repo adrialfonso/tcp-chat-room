@@ -1,6 +1,6 @@
 import socket
 import threading
-from colorama import init, Fore
+from colorama import init, Fore, Style
 
 init(autoreset=True)
 
@@ -16,19 +16,32 @@ server.listen()
 # Lists For Clients and Their Nicknames
 clients = []
 nicknames = []
+colors = [Fore.RED + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.BLUE + Style.BRIGHT,
+          Fore.MAGENTA + Style.BRIGHT, Fore.CYAN + Style.BRIGHT, Fore.WHITE + Style.BRIGHT,
+          Fore.GREEN + Style.BRIGHT, Fore.LIGHTRED_EX + Style.BRIGHT, Fore.LIGHTYELLOW_EX + Style.BRIGHT, 
+          Fore.LIGHTBLUE_EX + Style.BRIGHT, Fore.LIGHTMAGENTA_EX + Style.BRIGHT, Fore.LIGHTCYAN_EX + Style.BRIGHT, 
+          Fore.LIGHTWHITE_EX + Style.BRIGHT]
+
+# Add more colors if needed
+client_colors = {}  # Dictionary to store client colors
+
+print(Style.BRIGHT + Fore.GREEN + "TCP-Chat server listening...")
 
 # Sending Messages To All Connected Clients
 def broadcast(message, client_sender):
-    for client in clients:
+    sender_index = clients.index(client_sender)
+    sender_color = client_colors[client_sender]
+    
+    for client, color in zip(clients, colors):
         if client != client_sender:
-            client.send(message)
+            client.send((sender_color + message).encode('ascii'))
 
 # Function to remove a client
 def remove(client):
     if client in clients:
         index = clients.index(client)
         nickname = nicknames[index]
-        broadcast((Fore.RED + '{} left the chat room.'.format(nickname)).encode('ascii'), client)
+        broadcast('{} left the chat room.'.format(nickname), client)
         nicknames.remove(nickname)
         clients.remove(client)
         client.close()
@@ -43,7 +56,7 @@ def handle(client):
             if not message:
                 remove(client)
                 break
-            broadcast(message, client)
+            broadcast(message.decode('ascii'), client)
         except:
             # Removing And Closing Clients
             remove(client)
@@ -54,17 +67,22 @@ def receive():
     while True:
         # Accept Connection
         client, address = server.accept()
-        print(Fore.GREEN + "Connected with {}".format(str(address)))
+        print(Style.BRIGHT + Fore.GREEN + "Connected with {}".format(str(address)))
 
         # Request And Store Nicknames
         client.send('NICK'.encode('ascii'))
         nickname = client.recv(1024).decode('ascii')
         nicknames.append(nickname)
+
+        # Assign Color to Client
+        client_color = colors[len(nicknames) - 1]  # Assign color based on order of connection
+        client_colors[client] = client_color
+
         clients.append(client)
 
         # Print And Broadcast Nickname
-        print(Fore.GREEN + "Nickname: {}".format(nickname))
-        broadcast((Fore.GREEN + "{} joined the chat room.".format(nickname)).encode('ascii'), client)
+        print(client_color + "Nickname: {}".format(nickname))
+        broadcast("{} joined the chat room.".format(nickname), client)
         client.send('Connected to server. Start chatting!'.encode('ascii'))
 
         # Start Handling Thread For Client
@@ -73,4 +91,3 @@ def receive():
 
 # Start receiving function
 receive()
-
