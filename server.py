@@ -5,88 +5,85 @@ import random
 
 init(autoreset=True)
 
-# Connection Data
+# Server Configuration
 host = '127.0.0.1'
 port = 55555
 
-# Starting Server
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((host, port))
-server.listen()
+# Initialize Server
+tcp_server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+tcp_server.bind((host, port))
+tcp_server.listen()
 
-# Lists For Clients and Their Nicknames
-clients = []
-nicknames = []
+connected_clients = []
+client_nicknames = []
 available_colors = [Fore.RED + Style.BRIGHT, Fore.YELLOW + Style.BRIGHT, Fore.BLUE + Style.BRIGHT,
                     Fore.MAGENTA + Style.BRIGHT, Fore.CYAN + Style.BRIGHT, Fore.WHITE + Style.BRIGHT,
-                    Fore.GREEN + Style.BRIGHT, Fore.LIGHTRED_EX + Style.BRIGHT, Fore.LIGHTYELLOW_EX + Style.BRIGHT,
-                    Fore.LIGHTBLUE_EX + Style.BRIGHT, Fore.LIGHTMAGENTA_EX + Style.BRIGHT, Fore.LIGHTCYAN_EX + Style.BRIGHT,
-                    Fore.LIGHTWHITE_EX + Style.BRIGHT]
+                    Fore.GREEN + Style.BRIGHT]
 client_colors = {}
 
 print(Style.BRIGHT + Fore.GREEN + "TCP-Chat server listening...")
 
-# Sending Messages To All Connected Clients
-def broadcast(message, client_sender):
-    sender_index = clients.index(client_sender)
-    sender_color = client_colors[client_sender]
+# Send Messages To All Connected Clients
+def send_message_to_all(message, sender_client):
+    sender_index = connected_clients.index(sender_client)
+    sender_color = client_colors[sender_client]
     
-    for client, color in zip(clients, available_colors):
-        if client != client_sender:
+    for client, color in zip(connected_clients, available_colors):
+        if client != sender_client:
             client.send((sender_color + message).encode('ascii'))
 
-# Function to remove a client
-def remove(client):
-    if client in clients:
-        index = clients.index(client)
-        nickname = nicknames[index]
-        broadcast('{} left the chat room.'.format(nickname), client)
-        nicknames.remove(nickname)
-        clients.remove(client)
+# Function to disconnect a client
+def disconnect_client(client):
+    if client in connected_clients:
+        index = connected_clients.index(client)
+        nickname = client_nicknames[index]
+        send_message_to_all('{} left the chat room.'.format(nickname), client)
+        client_nicknames.remove(nickname)
+        connected_clients.remove(client)
         client.close()
         print(Fore.RED + "{} left the chat room.".format(nickname))
 
-# Handling Messages From Clients
-def handle(client):
+# Handle Messages From Clients
+def handle_client_messages(client):
     while True:
         try:
-            # Broadcasting Messages
+            # Broadcast Messages
             message = client.recv(1024)
             if not message:
-                remove(client)
+                disconnect_client(client)
                 break
-            broadcast(message.decode('ascii'), client)
+            send_message_to_all(message.decode('ascii'), client)
         except:
-            # Removing And Closing Clients
-            remove(client)
+            # Disconnect Clients
+            disconnect_client(client)
             break
 
-# Receiving / Listening Function
-def receive():
+# Receive Function
+def start_server():
     while True:
         # Accept Connection
-        client, address = server.accept()
+        client, address = tcp_server.accept()
         print(Style.BRIGHT + Fore.GREEN + "Connected with {}".format(str(address)))
 
         # Request And Store Nicknames
         client.send('NICK'.encode('ascii'))
         nickname = client.recv(1024).decode('ascii')
-        nicknames.append(nickname)
+        client_nicknames.append(nickname)
 
         # Assign Color to Client
         client_color = random.choice(available_colors)
         client_colors[client] = client_color
 
-        clients.append(client)
+        connected_clients.append(client)
 
         # Print And Broadcast Nickname
         print(client_color + "Nickname: {}".format(nickname))
-        broadcast("{} joined the chat room.".format(nickname), client)
+        send_message_to_all("{} joined the chat room.".format(nickname), client)
         client.send('Connected to server. Start chatting!'.encode('ascii'))
 
-        # Start Handling Thread For Client
-        thread = threading.Thread(target=handle, args=(client,))
-        thread.start()
+        # Start Thread For Client
+        client_thread = threading.Thread(target=handle_client_messages, args=(client,))
+        client_thread.start()
 
-# Start receiving function
-receive()
+# Start the server
+start_server()
