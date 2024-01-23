@@ -25,7 +25,7 @@ Before running the application, ensure you have the following dependencies insta
   ```bash
   pip install -r requirements.txt
 
-## Prerequisites
+## Chat Setup
 
 1. **Server Setup:**
 
