@@ -4,7 +4,6 @@ This is a simple TCP-based localhost chat application implemented in Python usin
 
 <div align="center">
   <img src="https://github.com/adrialfonso/tcp-chat-room/assets/90824134/50465f0b-7b05-4fe1-8427-3105b1dbd97a" alt="Image 2">
-  <img src="https://github.com/adrialfonso/tcp-chat-room/assets/90824134/aa6602f2-cbb2-4b6e-9d91-430bc6054949" alt="Image 1" height=345>
 </div>
 
 ## Features
