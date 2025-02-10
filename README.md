@@ -2,10 +2,6 @@
 
 This is a simple TCP-based localhost chat application implemented in Python using sockets and threads. The application includes both a server and a client component, allowing users to connect to the server, choose a nickname, and engage in real-time text-based communication with other connected clients.
 
-<div align="center">
-  <img src="https://github.com/adrialfonso/tcp-chat-room/assets/90824134/50465f0b-7b05-4fe1-8427-3105b1dbd97a" alt="Image 2">
-</div>
-
 ## Features
 
 - Multi-client chat server.
